@@ -73,20 +73,22 @@ class ErrorCheck(webapp2.RequestHandler):
         verifyCheck = self.request.get("verify")
         emailCheck = self.request.get("email")
 
-        errorlist = []
+        errorlist = {"username_error":" ", "password_error":" ", "verify_error":" ", "email_error":" "}
+        #errorlist = dict[usernameCheck = usernameCheck, emailCheck = emailCheck]
 
-        #if not username_checker(usernameCheck):
-            #error = "That's not a valid username"
-            #error1 = "<p class='error'>" + error + "</p>" if error else ""
+        if not username_checker(usernameCheck):
+            errorpresent = True
+            errorlist["username_error"] = "<span class='error'>" + " That's not a valid username" + "</span>"
+
+        
 
         text_form1 = """
         <form method="post">
-        <br>
         <label>Username</label>
         <input type="text" name="username" value={0}>{1}</input>
-        <br>
         </form>
-        """.format(usernameCheck,"Hi")
+        """.format(usernameCheck,errorlist["username_error"])
+
 
         text_form2="""
         <form method="post">
@@ -109,7 +111,6 @@ class ErrorCheck(webapp2.RequestHandler):
         <label>Email (optional)</label>
         <input type="text" name="email">{0}</input>
         <br>
-        <input type="submit" value="Submit">
         </form>
         """.format("That's not a valid email")
 
