@@ -47,10 +47,10 @@ class Index(webapp2.RequestHandler):
         <input type="text" name="username"></input>
         <br>
         <label>Password</label>
-        <input type="text" name="password"></input>
+        <input type="password" name="password"></input>
         <br>
         <label>Verify Password</label>
-        <input type="text" name="verify"></input>
+        <input type="password" name="verify"></input>
         <br>
         <label>Email (optional)</label>
         <input type="text" name="email"></input>
@@ -80,7 +80,20 @@ class ErrorCheck(webapp2.RequestHandler):
             errorpresent = True
             errorlist["username_error"] = "<span class='error'>" + " That's not a valid username" + "</span>"
 
-        
+        if not password_checker(passwordCheck):
+            errorpresent = True
+            errorlist["password_error"] = "<span class='error'>" + "That wasn't a valid password" + "</span>"
+
+        if passwordCheck != verifyCheck:
+            errorpresent = True
+            errorlist["verify_error"] = "<span class='error'>" + "Your passwords didn't match." + "</span>"
+
+        if not email_checker(emailCheck):
+            errorpresent = True
+            errorlist["email_error"] = "<span class='error'>" + "That's not a valid email" + "</span>"
+
+        if not errorpresent:
+            self.redirect('/welcome?username=' + usernameCheck)
 
         text_form1 = """
         <form method="post">
@@ -93,40 +106,42 @@ class ErrorCheck(webapp2.RequestHandler):
         text_form2="""
         <form method="post">
         <label>Password</label>
-        <input type="text" name="password">{0}</input>
+        <input type="password" name="password">{0}</input>
         <br>
         </form>
-        """.format("That wasn't a valid password")
+        """.format(errorlist["password_error"])
 
         text_form3 = """
         <form method="post">
         <label>Verify Password</label>
-        <input type="text" name="verify">{0}</input>
+        <input type="password" name="verify">{0}</input>
         <br>
         </form>
-        """.format("Your passwords didn't match.")
+        """.format(errorlist["verify_error"])
 
         text_form4 = """
         <form method="post">
         <label>Email (optional)</label>
-        <input type="text" name="email">{0}</input>
+        <input type="text" name="email" value={0}>{1}</input>
         <br>
         </form>
-        """.format("That's not a valid email")
-
-        error = self.request.get("error")
-        error_element = "<p class='error'>" + error + "</p>" if error else ""
+        """.format(emailCheck,errorlist["email_error"])
 
         text_form = text_form1 + text_form2 + text_form3 + text_form4
-        body_content = edit_header + text_form + error_element
+        body_content = edit_header + text_form
         response = page_header + body_content + page_footer
         self.response.write(response)
 
-#class Welcome(webapp2.RequestHandler):
-#    def post(self):
+class Welcome(webapp2.RequestHandler):
+    def get(self):
+        welcome_user = self.request.get("username")
+        edit_header = "<h1>Welcome, %s</h1>"%welcome_user
+
+        response = page_header + edit_header + page_footer
+        self.response.write(response)
 
 app = webapp2.WSGIApplication([
     ('/', Index),
     ('/errorcheck',ErrorCheck),
-    #('/welcome',Welcome)
+    ('/welcome',Welcome)
 ], debug=True)
